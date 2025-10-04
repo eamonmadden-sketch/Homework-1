@@ -1,0 +1,175 @@
+---
+title: "R CODES FOR DASHBOARD"
+---
+
+
+Start fresh
+```{r}
+rm(list = ls())
+```
+
+Paste links from GitHub here:
+```{r}
+# paste inside the quotations
+
+gpklink='https://github.com/eamonmadden-sketch/Homework-1/raw/refs/heads/main/e_se_asia_8857.gpkg'
+jsonlink='https://github.com/eamonmadden-sketch/Homework-1/raw/refs/heads/main/worldindicators.json'
+```
+
+Have the maps into R
+```{r}
+library(sf)
+
+Asia<-read_sf(gpklink, layer = 'continent')
+Dots<-read_sf(gpklink, layer = 'mobiles_ddm')
+PSM<-read_sf(gpklink, layer = 'mobiles_psm')
+
+```
+
+See and save plots:
+
+```{r}
+library(ggplot2)
+library(sf)
+library(scales)
+
+ggplot() + theme_light() +
+#call map
+geom_sf(data = Asia) +
+# adjust datum
+coord_sf(datum = st_crs(Asia)) +
+# custom X and Y axes
+scale_x_continuous(labels = label_number(scale = 1/1000, suffix = " km'")) +
+scale_y_continuous(labels = label_number(scale = 1/1000, suffix = " km")) +
+labs (x = "Easting", y = "Northing") #labels
+
+
+```
+
+```{r}
+dotplot=ggplot() + theme_light() +
+
+geom_sf(data = Asia, fill="white", color="grey80") +
+
+geom_sf(data=Dots,
+alpha=0.1,
+shape=20,
+size=0.5,
+color="red")+
+coord_sf(datum = st_crs(Asia)) +
+scale_x_continuous(labels = label_number(scale = 1/1000,
+suffix = " km")) +
+scale_y_continuous(labels = label_number(scale = 1/1000,
+suffix = " km")) +
+
+labs (x = "Easting", y = "Northing") 
+
+dotplot
+```
+
+```{r}
+library(leaflet)
+
+leafdots <- st_transform(Dots, crs = 4326)
+
+DotLeaf=leaflet() %>%
+  addTiles() %>% # base map
+  addCircleMarkers(data = leafdots,
+                        color="red",
+                        stroke=0,
+                        radius = 0.01,
+                        opacity = 0.1)
+```
+
+```{r}
+Psm1=ggplot() + theme_light() +
+
+#base
+geom_sf(data = Asia, fill="white", color="grey80") +
+
+geom_sf(data=PSM, 
+        shape=20, 
+        aes(size=mobiles/1000, 
+            color=factor(mobiles_outlier))) +
+scale_size_area(name = "Mobile phone users (x1,000)",
+                max_size = 20) +
+guides(color="none") +
+coord_sf(datum = st_crs(Asia)) +
+scale_x_continuous(labels = label_number(scale = 1/1000, suffix = " km")) +
+scale_y_continuous(labels = label_number(scale = 1/1000, suffix = " km")) +
+labs (x = "Easting", y = "Northing")
+
+Psm1
+```
+```{r}
+psm_4326 <- st_transform(PSM, crs=4326)
+                         
+PsmLeaf=leaflet() %>%
+  addProviderTiles(providers$CartoDB.Positron) %>%
+  addCircleMarkers(data = psm_4326,
+  fillColor = "red",
+  stroke = T, #border
+  color="red", #border color
+  fillOpacity = 0.5,
+  label = ~Country,
+  radius = ~size)
+
+PsmLeaf
+
+
+```
+```{r}
+Chloro=ggplot() + theme_light() +
+
+#base
+geom_sf(data=Asia,
+aes(fill=mobiles_density_FJ5_cat))+
+
+coord_sf(datum = st_crs(Asia))+
+scale_fill_brewer(direction = 1, palette = 'RdBu') +
+scale_x_continuous(labels = label_number(scale = 1/1000, suffix = " km'")) +
+scale_y_continuous(labels = label_number(scale = 1/1000, suffix = " km")) +
+labs(x = "Easting", y = "Northing", fill="Mobile phone user density")
+
+Chloro
+
+```
+```{r}
+choro_4326 <- st_transform(Asia, crs = 4326)
+
+choro_4326$mobiles_density_FJ5_cat=ordered(choro_4326$mobiles_density_FJ5_cat)
+
+pal <- colorFactor(palette = "RdBu",
+domain = choro_4326$mobiles_density_FJ5_cat,
+ordered = T,
+reverse = F)
+
+ChloroLeaf=leaflet(data = choro_4326) %>%
+  addProviderTiles(providers$CartoDB.Positron) %>%
+  addPolygons(
+    fillColor = ~pal(mobiles_density_FJ5_cat),
+    fillOpacity = 0.7,
+    color = "white",
+    weight = 1,
+    opacity = 1
+  ) %>%
+  addLegend(
+    pal = pal,
+    values = ~mobiles_density_FJ5_cat,  # Use tilde when mapping from data
+    title = "Mobile Density Category"
+  )
+
+```
+
+Saving
+
+```{r}
+ saveRDS(dotplot, file = "dotplot.rds")
+ saveRDS(DotLeaf, file = "DotLeaf.rds")
+ saveRDS(Psm1, file = "Psm1.rds")
+ saveRDS(PsmLeaf, file = "PsmLeaf.rds")
+ saveRDS(Chloro, file = "Chloro.rds")
+ saveRDS(ChloroLeaf, file = "ChloroLeaf.rds")
+```
+ 
+You are done!

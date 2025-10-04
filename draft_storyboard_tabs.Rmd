@@ -1,0 +1,59 @@
+---
+title: "THEMATICS - tabs - Eamon Madden"
+output:
+  flexdashboard::flex_dashboard:
+    navbar:
+      - { icon: "fa-github", href: "https://github.com/eamonmadden-sketch/Homework-1", align: right }
+
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard) # always
+```
+
+## Sidebar {.sidebar}
+
+
+Preparing the dashboard based on the instructions given in class!
+
+## Column {.tabset .tabset-fade}
+
+
+### DDM 1
+
+```{r}
+readRDS("dotplot.rds")
+```
+
+
+### DDM 2
+
+```{r}
+readRDS("DotLeaf.rds")
+```
+
+### PSM 1
+
+```{r}
+readRDS("Psm1.rds")
+```
+
+### PSM 2
+
+```{r}
+readRDS("PsmLeaf.rds")
+```
+
+
+### CHORO 1
+
+```{r}
+readRDS("Chloro.rds")
+```
+
+### CHORO 2
+
+```{r}
+readRDS("ChloroLeaf.rds")
+```
+
